@@ -1,22 +1,25 @@
 import os
-import anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-client = anthropic.Anthropic(
-    api_key=os.environ["ANTHROPIC_API_KEY"],
-    base_url=os.environ["ANTHROPIC_BASE_URL"],
+client = OpenAI(
+    api_key=os.environ["OPENAI_API_KEY"],
+    base_url=os.environ["OPENAI_BASE_URL"],
 )
-MODEL = os.environ["ANTHROPIC_MODEL"]
+MODEL = os.environ["OPENAI_MODEL"]
 
 user_input = input("你: ")
 
-message = client.messages.create(
+response = client.chat.completions.create(
     model=MODEL,
-    max_tokens=1000,
-    messages=[{"role": "user", "content": user_input}]
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant"},
+        {"role": "user", "content": user_input},
+    ],
+    stream=False,
+    reasoning_effort="high",
+    extra_body={"thinking": {"type": "enabled"}}
 )
 
-for block in message.content:
-    if block.type == "text":
-        print(f"[Agent回答]: {block.text}\n")
+print(response.choices[0].message.content)
