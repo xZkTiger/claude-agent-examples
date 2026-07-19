@@ -9,7 +9,7 @@ client = OpenAI(
 )
 MODEL = os.environ["OPENAI_MODEL"]
 
-user_input = input("你: ")
+user_input = input("[你]: ")
 
 response = client.chat.completions.create(
     model=MODEL,
@@ -22,4 +22,17 @@ response = client.chat.completions.create(
     extra_body={"thinking": {"type": "enabled"}}
 )
 
-print(response.choices[0].message.content)
+token_usage = {
+    'total': response.usage.total_tokens,
+    'prompt': response.usage.prompt_tokens,
+    'reasoning': response.usage.completion_tokens_details.reasoning_tokens,
+    'completion': response.usage.completion_tokens,
+}
+
+print(f"[Agent回答]: {response.choices[0].message.content}")
+print("=" * 100)
+print(f"(Token用量统计)："
+      f"总Token: {token_usage['total']:,}; "
+      f"输入Token: {token_usage['prompt']:,}; "
+      f"推理Token: {token_usage['reasoning']:,}; "
+      f"回答Token: {token_usage['completion'] - token_usage['reasoning']:,}\n")
